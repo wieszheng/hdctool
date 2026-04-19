@@ -35,31 +35,40 @@ def main() -> None:
         size = ui.get_display_size()
         print("UiDriver.get_display_size:", size)
 
-        layout = ui.capture_layout()
-        text = layout if isinstance(layout, str) else repr(layout)
-        print("UiDriver.capture_layout (节选):", text[:400] + ("..." if len(text) > 400 else ""))
+        # layout = ui.capture_layout()
+        # text = layout if isinstance(layout, str) else repr(layout)
+        # print("UiDriver.capture_layout (节选):", text[:400] + ("..." if len(text) > 400 else ""))
 
-        w, h = (size.get("width"), size.get("height")) if isinstance(size, dict) else (720, 1280)
-        x, y = w // 2, h // 3
-        ui.touch_down(x, y)
-        ui.touch_up(x, y)
-        ui.input_text("hello", x=0, y=0)
+        ui.screen.unlock()
 
-        CAPTURE_DIR.mkdir(parents=True, exist_ok=True)
-        frame_idx = 0
+        # w, h = (size.get("width"), size.get("height")) if isinstance(size, dict) else (720, 1280)
+        # x, y = w // 2, h // 3
+        # ui.touch_down(x, y)
+        # ui.touch_up(x, y)
+        # ui.click(1100, 225)
+        # ui.input_text("hello", x=528, y=225)
 
-        def on_frame(data: bytes) -> None:
-            nonlocal frame_idx
-            frame_idx += 1
-            ext = _frame_suffix(data)
-            path = CAPTURE_DIR / f"frame_{frame_idx:04d}{ext}"
-            path.write_bytes(data)
-            print(f"已保存: {path} ({len(data)} bytes)")
-
-        ui.start_capture_screen(on_frame)
-        time.sleep(1)
-        ui.stop_capture_screen()
-        print(f"共写入 {frame_idx} 帧 -> {CAPTURE_DIR}")
+        # ui.gestures.drag(1100, 2000, 1100, 225)
+        # ui.app_manager.force_stop("com.baidu.yiyan")
+        # print(ui.app_manager.get_bundle_info("com.baidu.yiyan"))
+        # print(ui.screen.get_display_size())
+        # print(ui.screen.unlock())
+        # print(ui.screen.stop_screen_record())
+        # CAPTURE_DIR.mkdir(parents=True, exist_ok=True)
+        # frame_idx = 0
+        #
+        # def on_frame(data: bytes) -> None:
+        #     nonlocal frame_idx
+        #     frame_idx += 1
+        #     ext = _frame_suffix(data)
+        #     path = CAPTURE_DIR / f"frame_{frame_idx:04d}{ext}"
+        #     path.write_bytes(data)
+        #     print(f"已保存: {path} ({len(data)} bytes)")
+        #
+        # ui.start_capture_screen(on_frame)
+        # time.sleep(1)
+        # ui.stop_capture_screen()
+        # print(f"共写入 {frame_idx} 帧 -> {CAPTURE_DIR}")
 
     except Exception as e:
         print("UiDriver 调用失败（检查设备、Hypium/uitest 与 agent .so）:", e)

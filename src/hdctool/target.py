@@ -82,7 +82,6 @@ class Target:
                 return True
         finally:
             transport.end()
-        return False
 
     def get_parameters(self) -> Parameters:
         transport = self.transport()

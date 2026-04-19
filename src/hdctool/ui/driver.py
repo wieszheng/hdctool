@@ -3,6 +3,7 @@ from __future__ import annotations
 import concurrent.futures
 import inspect
 import json
+import os
 import pathlib
 import socket
 import threading
@@ -10,7 +11,7 @@ import time
 import zlib
 from collections.abc import Callable
 from functools import cached_property
-from typing import Any
+from typing import Any, Optional, Dict
 
 from ..events import EventEmitter
 from ..target import Target
@@ -203,6 +204,7 @@ class UiDriver(EventEmitter):
         self._capture_cb: Callable[[int, bytes], None] | None = None
         self._conn_lock = threading.Lock()
         self._pump_thread: threading.Thread | None = None
+        self._layout_xml: Optional[str] = None
 
     @property
     def target(self) -> Target:
@@ -285,6 +287,10 @@ class UiDriver(EventEmitter):
         if ui_pid:
             self._shell(f"kill -9 {ui_pid}")
 
+    def wait_for_idle(self, idle_time: int = 100, timeout: int = 5000) -> None:
+        """等待设备空闲"""
+        self._send("CtrlCmd", "waitForIdle", {"idleTime": idle_time, "timeout": timeout})
+
     def start_capture_screen(
         self,
         callback: Callable[[bytes], Any],
@@ -317,32 +323,112 @@ class UiDriver(EventEmitter):
             self._capture_cb = None
 
     def capture_layout(self) -> Any:
+        """
+        捕获界面布局
+
+        Returns:
+            布局信息
+        """
         r = self._send("Captures", "captureLayout")
         return r["result"]
 
+    def dump_layout(self, file_path: Optional[str] = None) -> str:
+
+        remote_path = "/data/local/tmp/hypium_layout.xml"
+        self._shell(f"rm -f {remote_path}")
+
+        output = self._shell(f"uitest dumpLayout -p {remote_path}")
+        if "DumpLayout saved to" not in output:
+            raise RuntimeError(f"dumpLayout failed: {output}")
+
+        if file_path:
+            dir_path = os.path.dirname(file_path)
+            if dir_path:
+                os.makedirs(dir_path, exist_ok=True)
+            self.target.recv_file(remote_path, file_path)
+
+        try:
+            local_path = "/tmp/hypium_layout.xml"
+            self.target.recv_file(remote_path, local_path)
+            with open(local_path, "r", encoding="utf-8") as f:
+                self._layout_xml = f.read()
+        except Exception:
+            self._layout_xml = None
+
+        return self._layout_xml or ""
+
+    def dump_layout_json(self, file_path: Optional[str] = None) -> Dict[str, Any]:
+
+        xml_str = self.dump_layout(file_path)
+        if not xml_str:
+            return {}
+
+        try:
+            import defusedxml.ElementTree as ET
+            root = ET.fromstring(xml_str)
+
+            def parse_elem(e: ET.Element) -> Dict[str, Any]:
+                result = {"type": e.tag}
+                result.update(e.attrib)
+                children = [parse_elem(c) for c in e]
+                if children:
+                    result["children"] = children
+                return result
+
+            layout = parse_elem(root)
+            if file_path:
+                json_path = file_path.replace(".xml", ".json") if file_path.endswith(".xml") else f"{file_path}.json"
+                with open(json_path, "w", encoding="utf-8") as f:
+                    json.dump(layout, f, ensure_ascii=False, indent=2)
+            return layout
+        except ImportError:
+            return {}
+        except Exception:
+            return {}
+
     def get_display_size(self) -> Any:
+        """
+        获取屏幕尺寸
+
+        Returns:
+            {"width": int, "height": int}
+        """
         r = self._send("CtrlCmd", "getDisplaySize")
         return r["result"]
 
     def touch_down(self, x: float, y: float) -> None:
+        """触摸按下"""
         self._send("Gestures", "touchDown", {"x": x, "y": y})
 
     def touch_move(self, x: float, y: float) -> None:
+        """触摸移动"""
         self._send("Gestures", "touchMove", {"x": x, "y": y})
 
     def touch_up(self, x: float, y: float) -> None:
+        """触摸释放"""
         self._send("Gestures", "touchUp", {"x": x, "y": y})
 
     def input_text(self, text: str, x: float = 0, y: float = 0) -> None:
+        """
+        输入文本
+
+        Args:
+            text: 要输入的文本
+            x: 点击位置 x
+            y: 点击位置 y
+        """
         self._send("callHypiumApi", "inputText", [{"x": x, "y": y}, text])
 
     def press_back(self) -> None:
+        """按下返回键"""
         self._send("callHypiumApi", "pressBack", [])
 
     def press_home(self) -> None:
+        """按下 Home 键"""
         self._send("callHypiumApi", "pressHome", [])
 
     def click(self, x: float, y: float) -> None:
+        """点击"""
         self._send("callHypiumApi", "click", [{"x": x, "y": y}])
 
     def double_click(self, x: float, y: float) -> None:
@@ -350,12 +436,6 @@ class UiDriver(EventEmitter):
 
     def long_click(self, x: float, y: float, duration_ms: int = 1500) -> None:
         self._send("callHypiumApi", "longClick", [{"x": x, "y": y}, duration_ms])
-
-    def start_app(self, bundle_name: str) -> None:
-        self._send("callHypiumApi", "startApp", [bundle_name])
-
-    def stop_app(self, bundle_name: str) -> None:
-        self._send("callHypiumApi", "stopApp", [bundle_name])
 
     def swipe(
         self,
@@ -370,6 +450,7 @@ class UiDriver(EventEmitter):
             "swipe",
             [{"x": x1, "y": y1}, {"x": x2, "y": y2}, duration_ms],
         )
+
 
     def _send(self, method: str, api: str, args: Any = None) -> dict[str, Any]:
         if args is None:

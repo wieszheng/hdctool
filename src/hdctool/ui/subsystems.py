@@ -6,10 +6,11 @@
 
 from __future__ import annotations
 
+import json
 import shlex
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional, Dict, List
 
 from ..hilog import Hilog, HilogEntry
 
@@ -138,11 +139,80 @@ class UiAppManager:
     def __init__(self, driver: UiDriver) -> None:
         self._d = driver
 
-    def start_app(self, bundle_name: str) -> None:
-        self._d.start_app(bundle_name)
+    def start_app(
+        self,
+        bundle_name: str,
+        ability_name: Optional[str] = None,
+        params: str = "",
+    ) -> None:
+        """启动应用
+
+        Args:
+            bundle_name: 应用包名
+            ability_name: Ability 名称（可选，自动匹配）
+            params: 启动参数（可选）
+        """
+        cmd = "aa start"
+        if ability_name:
+            cmd += f" -a {ability_name}"
+        if params:
+            cmd += f" {params}"
+        cmd += f" -b {bundle_name}"
+
+        output = self._d._shell(cmd)
+        if "successfully" not in output.lower():
+            raise RuntimeError(f"Failed to start app: {output}")
 
     def stop_app(self, bundle_name: str) -> None:
-        self._d.stop_app(bundle_name)
+        """强制停止应用"""
+        output = self._d._shell(f"aa force-stop {bundle_name}")
+        if "successfully" not in output.lower():
+            raise RuntimeError(f"Failed to stop app: {output}")
+
+    def get_app_info(
+        self,
+        bundle_name: str,
+    ) -> Dict[str, Any]:
+        """获取应用信息
+
+        Args:
+            bundle_name: 应用包名
+
+        Returns:
+            应用信息字典
+        """
+        cmd = f"bm dump -n {bundle_name}"
+        output = self._d._shell(cmd)
+
+        try:
+            start = output.find("{")
+            if start >= 0:
+                json_str = output[start:]
+                return json.loads(json_str)
+        except json.JSONDecodeError:
+            pass
+
+        raise RuntimeError(f"Failed to get app info: {output}")
+
+    def get_installed_apps(
+        self,
+    ) -> List[str]:
+        """获取已安装应用列表
+
+        Returns:
+            已安装应用包名列表
+        """
+        cmd = "bm dump -a"
+        output = self._d._shell(cmd)
+        lines = output.strip().split("\n")
+
+        apps = []
+        for line in lines:
+            line = line.strip()
+            if line and ":" not in line:
+                apps.append(line)
+
+        return apps
 
     def install_app(self, hap_path: str) -> None:
         self._d.target.install(hap_path)
@@ -150,28 +220,42 @@ class UiAppManager:
     def uninstall_app(self, bundle_name: str) -> None:
         self._d.target.uninstall(bundle_name)
 
-    def clear_app_data(self, bundle_name: str) -> None:
-        """清除应用数据（``bm clean``，命令随 OpenHarmony 版本可能略有差异）。"""
-        b = shlex.quote(bundle_name)
-        self._d._shell(f"bm clean -n {b}")
-
     def force_stop(self, bundle_name: str) -> None:
         self._d._shell(f"aa force-stop {shlex.quote(bundle_name)}")
+
+    def clear_app_data(self, bundle_name: str) -> None:
+        """清除应用数据"""
+        output = self._d._shell(f"bm clean -d -n {bundle_name}")
+        if "error" in output.lower():
+            raise RuntimeError(f"Failed to clear app data: {output}")
+
+    def clear_app_cache(self, bundle_name: str) -> None:
+        """清除应用缓存"""
+        output = self._d._shell(f"bm clean -c -n {bundle_name}")
+        if "error" in output.lower():
+            raise RuntimeError(f"Failed to clear app cache: {output}")
+
+    def get_app_version(self, bundle_name: str) -> Optional[str]:
+        """获取应用版本"""
+        try:
+            info = self.get_app_info(bundle_name)
+            return info.get("versionName", "")
+        except Exception:
+            return None
 
     def get_bundle_info(self, bundle_name: str) -> str:
         return self._d._shell(f"bm dump -n {shlex.quote(bundle_name)}")
 
-    def list_packages(self, *, grep: str | None = None) -> str:
-        raw = self._d._shell("bm get -u")
-        if grep:
-            return "\n".join(line for line in raw.splitlines() if grep in line)
-        return raw
-
-    def running_processes(self, *, grep: str | None = None) -> str:
-        raw = self._d._shell("ps -ef")
-        if grep:
-            return "\n".join(line for line in raw.splitlines() if grep in line)
-        return raw
+    def get_app_permissions(self, bundle_name: str) -> List[str]:
+        """获取应用权限列表"""
+        output = self.d._shell(f"bm dump -n {bundle_name} -p")
+        permissions = []
+        for line in output.split("\n"):
+            line = line.strip()
+            if line.startswith("permission:"):
+                perm = line.replace("permission:", "").strip()
+                permissions.append(perm)
+        return permissions
 
 
 class UiStorage:
@@ -205,14 +289,14 @@ class UiScreen:
     def __init__(self, driver: UiDriver) -> None:
         self._d = driver
 
-    def wake(self) -> None:
-        self._d._shell("input keyevent 224")
+    def wake_up(self) -> None:
+        """唤醒屏幕"""
+        self._d._shell("power-shell wakeup")
 
     def sleep(self) -> None:
-        self._d._shell("input keyevent 223")
+        """关闭屏幕"""
+        self._d._shell("power-shell suspend")
 
-    def press_power(self) -> None:
-        self._d._shell("input keyevent 26")
 
     def lock(self) -> None:
         try:
@@ -220,11 +304,28 @@ class UiScreen:
         except RuntimeError:
             self.press_power()
 
+    def is_display_on(self) -> bool:
+        """检查屏幕是否点亮"""
+        output = self._d._shell("hidumper -s PowerManagerService -a '-a'")
+        return "Current State: AWAKE" in output
+
+    def is_display_locked(self) -> bool:
+        """检查屏幕是否锁屏"""
+        output = self._d._shell("hidumper -s ScreenlockService -a -all")
+        for line in output.split("\n"):
+            if "screenLocked" in line:
+                return "false" not in line
+        return not self.is_display_on()
+
     def unlock(self) -> None:
-        try:
-            self._d.call_driver("unlock", [])
-        except RuntimeError:
-            self.wake()
+        """解锁屏幕"""
+        if not self.is_display_on():
+            self.wake_up()
+            time.sleep(1)
+
+        size = self.get_display_size()
+        cx = size["width"] // 2
+        self._d.swipe(cx, int(size["height"] * 0.6), cx, int(size["height"] * 0.3), duration_ms=100)
 
     def set_orientation(self, orientation: int | str) -> None:
         """屏幕方向：整数（0–3）或 ``portrait`` / ``landscape`` 等字符串。"""
@@ -269,6 +370,26 @@ class UiSystem:
 
     def __init__(self, driver: UiDriver) -> None:
         self._d = driver
+
+    def get_device_type(self) -> str:
+        """获取设备类型"""
+        return self._d._shell("param get const.product.devicetype").strip()
+
+    def get_device_sn(self) -> str:
+        """获取设备序列号"""
+        return self._d.target.connect_key
+
+    def get_device_model(self) -> str:
+        """获取设备型号"""
+        return self._d._shell("param get const.product.model").strip()
+
+    def get_api_level(self) -> str:
+        """获取 API 版本"""
+        return self._d._shell("param get const.ohos.apiversion").strip()
+
+    def get_system_version(self) -> str:
+        """获取系统版本"""
+        return self._d._shell("param get const.product.software.version").strip()
 
     def get_param(self, key: str) -> str:
         return self._d._shell(f"param get {key}").strip()
