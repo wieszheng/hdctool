@@ -59,6 +59,7 @@ client.hdc(["list", "targets"])
 ## 布局（src）
 
 - `src/hdctool/` — 包根，`py.typed` 标明支持类型检查
+- `src/hdctool/uitestkit_sdk/` — uitest agent（`uitest_agent_*.so`）随仓库提交，供 `UiDriver` 推送到设备；若克隆后缺失请从本地 Harmony/OpenHarmony uitest 工具链拷贝同名文件
 - `examples/` — 可运行示例
 - `tests/` — pytest
 - `.github/workflows/ci.yml` — CI（Ruff + pytest，Ubuntu / Windows × Python 3.10–3.12）

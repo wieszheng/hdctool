@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hdctool"
-version = "0.4.0"
+version = "0.4.1"
 description = "Synchronous Python client for OpenHarmony Device Connector (HDC)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -26,7 +26,9 @@ classifiers = [
 dev = ["pytest>=8", "ruff>=0.8"]
 
 [project.urls]
-Homepage = "https://github.com/liriliri/hdckit"
+Homepage = "https://github.com/wieszheng/hdctool"
+Repository = "https://github.com/wieszheng/hdctool.git"
+Issues = "https://github.com/wieszheng/hdctool/issues"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

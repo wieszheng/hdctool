@@ -11,4 +11,3 @@ build/
 .venv/
 venv/
 capture_frames/
-*.so

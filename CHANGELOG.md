@@ -2,6 +2,13 @@
 
 本文档遵循用户可见行为变更的简要记录；版本号与 `pyproject.toml`、`hdctool.__version__` 保持一致。
 
+## 0.4.1（2026-04-19）
+
+### 变更
+
+- **版本库**：不再通过 `.gitignore` 排除 `*.so`，`src/hdctool/uitestkit_sdk/` 下的 `uitest_agent_*.so` 可正常纳入 Git 与发行包。
+- **元数据**：`pyproject.toml` 中项目主页、仓库与 Issues 链接改为 [wieszheng/hdctool](https://github.com/wieszheng/hdctool)。
+
 ## 0.4.0（2026-04-19）
 
 ### 新增
