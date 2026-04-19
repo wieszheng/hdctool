@@ -4,6 +4,7 @@ import concurrent.futures
 import inspect
 import json
 import pathlib
+import shlex
 import socket
 import threading
 import time
@@ -28,7 +29,9 @@ from .subsystems import (
 _PKG_ROOT = pathlib.Path(__file__).resolve().parent.parent
 SDK_PATH_DEFAULT = _PKG_ROOT / "uitestkit_sdk" / "uitest_agent_v1.2.2.so"
 SDK_VERSION_DEFAULT = "1.2.2"
-AGENT_PATH = "/data/local/tmp/agent.so"
+# 与包内 so 同名推到设备，避免与旧版 agent.so 混用；推送后再同步到 AGENT_RUNTIME_ALIAS
+AGENT_PATH = f"/data/local/tmp/{SDK_PATH_DEFAULT.name}"
+AGENT_RUNTIME_ALIAS = "/data/local/tmp/agent.so"
 
 HEADER_BYTES = b"_uitestkit_rpc_message_head_"
 TAILER_BYTES = b"_uitestkit_rpc_message_tail_"
@@ -426,7 +429,7 @@ class UiDriver(EventEmitter):
                             "message_type": "hypium",
                         },
                     },
-                    timeout=1.0,
+                    timeout=8.0,
                 )
                 self._driver_name = str(create_result["result"])
                 self._connection = conn
@@ -443,16 +446,32 @@ class UiDriver(EventEmitter):
         self._target.forward(local, remote)
         return port
 
+    def _device_embedded_agent_version(self) -> str:
+        """读取设备上已存在的 agent（版本化路径或旧 alias）内嵌版本号，取较新者。"""
+        best = "0"
+        for path in (AGENT_PATH, AGENT_RUNTIME_ALIAS):
+            q = shlex.quote(path)
+            raw = self._shell(
+                f"test -f {q} && cat {q} 2>/dev/null | grep -a UITEST_AGENT_LIBRARY || true"
+            )
+            if "UITEST_AGENT_LIBRARY" not in raw:
+                continue
+            ver = _get_sdk_version(raw)
+            if _cmp_version(ver, best) > 0:
+                best = ver
+        return best
+
     def _should_update_sdk(self) -> bool:
-        result = self._shell(f"cat {AGENT_PATH} | grep -a UITEST_AGENT_LIBRARY")
-        if "UITEST_AGENT_LIBRARY" not in result:
+        ver = self._device_embedded_agent_version()
+        if ver == "0":
             return True
-        ver = _get_sdk_version(result)
         return _cmp_version(ver, self._sdk_version) < 0
 
     def _update_sdk(self) -> None:
-        self._shell(f"rm {AGENT_PATH}")
+        for path in (AGENT_PATH, AGENT_RUNTIME_ALIAS):
+            self._shell(f"rm -f {shlex.quote(path)}")
         self._target.send_file(str(self._sdk_path), AGENT_PATH)
+        self._shell(f"cp {shlex.quote(AGENT_PATH)} {shlex.quote(AGENT_RUNTIME_ALIAS)}")
 
     def _shell(self, command: str) -> str:
         conn = self._target.shell(command)
