@@ -2,14 +2,6 @@
 
 本文档遵循用户可见行为变更的简要记录；版本号与 `pyproject.toml`、`hdctool.__version__` 保持一致。
 
-## 0.4.3（2026-04-19）
-
-### 变更
-
-- **UiDriver agent 路径**：设备端 `AGENT_PATH` 与包内 `uitest_agent_v*.so` 同名（如 `/data/local/tmp/uitest_agent_v1.2.2.so`），推送后 `cp` 到 `/data/local/tmp/agent.so`，兼容仍从旧路径加载的 uitest；版本检测会查看两处文件取较新版本。
-- **UiDriver**：`Driver.create` 首次 RPC 超时由 1s 调整为 8s，减轻真机冷启动失败。
-- **示例**：`hdc_demo.py` 失败时打印 `repr(e)` 与完整 traceback。
-
 ## 0.4.2（2026-04-19）
 
 ### 变更
