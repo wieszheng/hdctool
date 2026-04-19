@@ -1,5 +1,4 @@
 import time
-import traceback
 from pathlib import Path
 
 import hdctool
@@ -63,8 +62,7 @@ def main() -> None:
         print(f"共写入 {frame_idx} 帧 -> {CAPTURE_DIR}")
 
     except Exception as e:
-        print("UiDriver 调用失败（检查设备、Hypium/uitest 与 agent .so）:", repr(e))
-        traceback.print_exc()
+        print("UiDriver 调用失败（检查设备、Hypium/uitest 与 agent .so）:", e)
     finally:
         if ui is not None:
             ui.stop()
