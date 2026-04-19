@@ -2,6 +2,12 @@
 
 本文档遵循用户可见行为变更的简要记录；版本号与 `pyproject.toml`、`hdctool.__version__` 保持一致。
 
+## 0.4.2（2026-04-19）
+
+### 变更
+
+- 默认 uitest agent 升级为 **`uitest_agent_v1.2.2.so`**（`SDK_VERSION_DEFAULT` = `1.2.2`）。请将对应二进制置于 `src/hdctool/uitestkit_sdk/` 并提交。
+
 ## 0.4.1（2026-04-19）
 
 ### 变更

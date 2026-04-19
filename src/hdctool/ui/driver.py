@@ -26,8 +26,8 @@ from .subsystems import (
 
 # Package root (…/hdctool/), sibling to ``uitestkit_sdk/``
 _PKG_ROOT = pathlib.Path(__file__).resolve().parent.parent
-SDK_PATH_DEFAULT = _PKG_ROOT / "uitestkit_sdk" / "uitest_agent_v1.1.0.so"
-SDK_VERSION_DEFAULT = "1.1.0"
+SDK_PATH_DEFAULT = _PKG_ROOT / "uitestkit_sdk" / "uitest_agent_v1.2.2.so"
+SDK_VERSION_DEFAULT = "1.2.2"
 AGENT_PATH = "/data/local/tmp/agent.so"
 
 HEADER_BYTES = b"_uitestkit_rpc_message_head_"
