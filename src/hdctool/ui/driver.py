@@ -24,6 +24,8 @@ from .subsystems import (
     UiSystem,
     UiUinput,
 )
+from .assertion import Assert
+from .cv import CV, CVPoint, CVMatch
 
 # Package root (…/hdctool/), sibling to ``uitestkit_sdk/``
 _PKG_ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -240,6 +242,16 @@ class UiDriver(EventEmitter):
     def hilog(self) -> UiHilogBridge:
         """hilog 流与 listener。"""
         return UiHilogBridge(self)
+
+    @cached_property
+    def cv(self) -> CV:
+        """基于 OpenCV 的图像识别（模板匹配、OCR 等）。"""
+        return CV(self)
+
+    @cached_property
+    def assertion(self) -> Assert:
+        """断言模块，支持多种断言方法及失败截屏。"""
+        return Assert(self)
 
     @cached_property
     def uinput(self) -> UiUinput:

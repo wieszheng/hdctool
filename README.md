@@ -17,6 +17,7 @@
 - **设备生命周期管理**：提供稳定的一体化接口实现对特定设别（`Target`）的各类操作。
 - **UiDriver 原生内嵌**：内置 `uitestkit_sdk`，对 OpenHarmony/HarmonyOS 的 UI 测试套件（Hypium/uitest）进行了高度封装。可在 Python 端用极简代码拉起应用、触发点击滑动、解析 UI 树、监听 hilog。
 - **类型完善**：`py.typed` 完整支持，所有暴露的 API 皆有 MyPy / Pylance 类型提示，极大地提升了开发体验。
+- **丰富文档**：提供 [docs/](./docs/) 目录，包含详细的使用指南与 API 参考。
 
 ---
 
@@ -151,6 +152,10 @@ finally:
 | `ui.system` | 系统辅助与参数 | `get_device_type()`, `get_api_level()`, `reboot()` |
 | `ui.uinput` | 输入相关底层 | `tap()`, `key_event()`, `key_combo()`, `inject_key()` |
 | `ui.hilog` | 日志桥接 | `open()`, `listen()` |
+| `ui.cv` | 图像识别 (OpenCV) | `find_image()`, `find_and_click()`, `ocr_text()`, `match_image()` |
+| `ui.assertion` | 断言模块 | `equal()`, `contains()`, `is_true()`, `greater()`, `in_range()` 等 |
+
+> **提示**：`ui.cv` 模块需要安装 OpenCV 依赖：`pip install hdctool[cv]`
 
 如果遇到框架尚未内置的 Hypium RPC 能力，可直接通过 `ui.call_driver(api_name, args)` 和 `ui.call_rpc(method, api, args)` 反射调用。
 
@@ -184,6 +189,3 @@ export HDCTOOL_LOG_LEVEL=DEBUG
 
 关于版本的规范、CI 工作流以及发布到 PyPI 的指引，请参考维护者专用文档：[RELEASING.md](./RELEASING.md)。
 
-## 📄 协议
-
-本项目基于 **MIT License** 开源。详细条款请参见 `LICENSE`。

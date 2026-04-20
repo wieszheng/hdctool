@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import List, Dict
+
 from ..command import Command
 from ..types import ForwardRule
 from ..util import read_ports
@@ -15,7 +17,7 @@ class ForwardPortCommand(Command[None]):
 
 
 class ListForwardsCommand(Command[list[ForwardRule]]):
-    def execute(self) -> list[ForwardRule]:
+    def execute(self) -> List[Dict[str, str]]:
         self.send_str("fport ls")
         data = self.connection.read_value()
         result = data.decode("utf-8", errors="replace")

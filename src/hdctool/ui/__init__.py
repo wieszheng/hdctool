@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .assertion import Assert
+from .cv import CV, CVMatch, CVPoint
 from .driver import UiDriver
 from .subsystems import (
     UiAppManager,
@@ -14,6 +16,7 @@ from .subsystems import (
 )
 
 __all__ = [
+    "Assert",
     "UiAppManager",
     "UiDriver",
     "UiGestures",
@@ -22,4 +25,7 @@ __all__ = [
     "UiStorage",
     "UiSystem",
     "UiUinput",
+    "CV",
+    "CVMatch",
+    "CVPoint",
 ]

@@ -2,7 +2,23 @@
 
 本文档遵循用户可见行为变更的简要记录；版本号与 `pyproject.toml`、`hdctool.__version__` 保持一致。
 
-## 0.4.2（2026-04-19）
+## 0.5.0（2026-04-20）
+
+### 新增
+
+- **`ui.cv` 图像识别模块**：基于 OpenCV 的图像匹配、特征点检测、OCR 文字识别、颜色检测等功能。
+  - 模板匹配：`find_image()`、`find_images()`、`find_and_click()`、`match_image()`
+  - 等待机制：`wait_for_image()`、`wait_for_image_disappear()`
+  - OCR：`ocr_text()`、`find_text()`（需安装 paddlepaddle + paddleocr）
+  - 图像对比：`compare_images()`、`detect_colors()`、`get_pixel_color()`
+  - 安装依赖：`pip install hdctool[cv]`
+
+- **`ui.assertion` 断言模块**：类似 hypium 的断言功能，支持断言失败后自动截屏。
+  - 相等性断言：`equal()`、`not_equal()`、`is_true()`、`is_false()`、`is_none()`、`is_not_none()`
+  - 字符串断言：`contains()`、`not_contains()`、`starts_with()`、`ends_with()`、`match_regexp()`、`length_equal()`
+  - 数值断言：`greater()`、`greater_equal()`、`less()`、`less_equal()`、`in_range()`
+
+- **文档**：新增 [`docs/`](./docs/) 目录，包含快速开始、UiDriver、CV 模块、Assertion 模块使用指南。
 
 ### 变更
 
