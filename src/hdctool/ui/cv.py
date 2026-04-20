@@ -3,6 +3,7 @@ CV - 图像识别模块
 
 基于 OpenCV 的图像识别功能，支持模板匹配、特征点匹配等。
 """
+
 from __future__ import annotations
 
 import os
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
 try:
     import cv2
     import numpy as np
+
     CV2_AVAILABLE = True
 except ImportError:
     CV2_AVAILABLE = False
@@ -247,10 +249,7 @@ class CV:
         for match in matches[:max_results]:
             is_duplicate = False
             for existing in filtered:
-                if (
-                    abs(match.x - existing.x) < w // 2
-                    and abs(match.y - existing.y) < h // 2
-                ):
+                if abs(match.x - existing.x) < w // 2 and abs(match.y - existing.y) < h // 2:
                     is_duplicate = True
                     break
             if not is_duplicate:
@@ -385,8 +384,7 @@ class CV:
             from paddleocr import PaddleOCR
         except ImportError:
             raise ImportError(
-                "PaddleOCR is not available. "
-                "Please install: pip install paddlepaddle paddleocr"
+                "PaddleOCR is not available. Please install: pip install paddlepaddle paddleocr"
             )
 
         if source is None:
@@ -445,9 +443,7 @@ class CV:
             匹配结果列表
         """
         results = self.ocr_text(source)
-        matched = [
-            r for r in results if text.lower() in r["text"].lower()
-        ]
+        matched = [r for r in results if text.lower() in r["text"].lower()]
         return [r for r in matched if r["confidence"] >= confidence]
 
     def compare_images(

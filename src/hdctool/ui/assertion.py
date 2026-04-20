@@ -3,6 +3,7 @@ Assert - 断言模块
 
 提供类似 hypium 的断言功能，支持断言失败后自动截屏。
 """
+
 from __future__ import annotations
 
 import re
