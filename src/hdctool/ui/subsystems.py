@@ -10,7 +10,7 @@ import json
 import shlex
 import time
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Optional, Dict, List
+from typing import TYPE_CHECKING, Any
 
 from ..hilog import Hilog, HilogEntry
 
@@ -142,7 +142,7 @@ class UiAppManager:
     def start_app(
         self,
         bundle_name: str,
-        ability_name: Optional[str] = None,
+        ability_name: str | None = None,
         params: str = "",
     ) -> None:
         """启动应用
@@ -172,7 +172,7 @@ class UiAppManager:
     def get_app_info(
         self,
         bundle_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """获取应用信息
 
         Args:
@@ -196,7 +196,7 @@ class UiAppManager:
 
     def get_installed_apps(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """获取已安装应用列表
 
         Returns:
@@ -235,7 +235,7 @@ class UiAppManager:
         if "error" in output.lower():
             raise RuntimeError(f"Failed to clear app cache: {output}")
 
-    def get_app_version(self, bundle_name: str) -> Optional[str]:
+    def get_app_version(self, bundle_name: str) -> str | None:
         """获取应用版本"""
         try:
             info = self.get_app_info(bundle_name)
@@ -246,7 +246,7 @@ class UiAppManager:
     def get_bundle_info(self, bundle_name: str) -> str:
         return self._d._shell(f"bm dump -n {shlex.quote(bundle_name)}")
 
-    def get_app_permissions(self, bundle_name: str) -> List[str]:
+    def get_app_permissions(self, bundle_name: str) -> list[str]:
         """获取应用权限列表"""
         output = self.d._shell(f"bm dump -n {bundle_name} -p")
         permissions = []

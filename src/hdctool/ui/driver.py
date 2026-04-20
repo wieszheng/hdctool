@@ -11,7 +11,7 @@ import time
 import zlib
 from collections.abc import Callable
 from functools import cached_property
-from typing import Any, Optional, Dict
+from typing import Any
 
 from ..events import EventEmitter
 from ..target import Target
@@ -204,7 +204,7 @@ class UiDriver(EventEmitter):
         self._capture_cb: Callable[[int, bytes], None] | None = None
         self._conn_lock = threading.Lock()
         self._pump_thread: threading.Thread | None = None
-        self._layout_xml: Optional[str] = None
+        self._layout_xml: str | None = None
 
     @property
     def target(self) -> Target:
@@ -332,7 +332,7 @@ class UiDriver(EventEmitter):
         r = self._send("Captures", "captureLayout")
         return r["result"]
 
-    def dump_layout(self, file_path: Optional[str] = None) -> str:
+    def dump_layout(self, file_path: str | None = None) -> str:
 
         remote_path = "/data/local/tmp/hypium_layout.xml"
         self._shell(f"rm -f {remote_path}")
@@ -350,14 +350,14 @@ class UiDriver(EventEmitter):
         try:
             local_path = "/tmp/hypium_layout.xml"
             self.target.recv_file(remote_path, local_path)
-            with open(local_path, "r", encoding="utf-8") as f:
+            with open(local_path, encoding="utf-8") as f:
                 self._layout_xml = f.read()
         except Exception:
             self._layout_xml = None
 
         return self._layout_xml or ""
 
-    def dump_layout_json(self, file_path: Optional[str] = None) -> Dict[str, Any]:
+    def dump_layout_json(self, file_path: str | None = None) -> dict[str, Any]:
 
         xml_str = self.dump_layout(file_path)
         if not xml_str:
@@ -367,7 +367,7 @@ class UiDriver(EventEmitter):
             import defusedxml.ElementTree as ET
             root = ET.fromstring(xml_str)
 
-            def parse_elem(e: ET.Element) -> Dict[str, Any]:
+            def parse_elem(e: ET.Element) -> dict[str, Any]:
                 result = {"type": e.tag}
                 result.update(e.attrib)
                 children = [parse_elem(c) for c in e]
@@ -377,7 +377,11 @@ class UiDriver(EventEmitter):
 
             layout = parse_elem(root)
             if file_path:
-                json_path = file_path.replace(".xml", ".json") if file_path.endswith(".xml") else f"{file_path}.json"
+                json_path = (
+                    file_path.replace(".xml", ".json")
+                    if file_path.endswith(".xml")
+                    else f"{file_path}.json"
+                )
                 with open(json_path, "w", encoding="utf-8") as f:
                     json.dump(layout, f, ensure_ascii=False, indent=2)
             return layout
