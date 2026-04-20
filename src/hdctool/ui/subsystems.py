@@ -297,7 +297,6 @@ class UiScreen:
         """关闭屏幕"""
         self._d._shell("power-shell suspend")
 
-
     def lock(self) -> None:
         try:
             self._d.call_driver("lockScreen", [])

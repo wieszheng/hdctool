@@ -365,6 +365,7 @@ class UiDriver(EventEmitter):
 
         try:
             import defusedxml.ElementTree as ET
+
             root = ET.fromstring(xml_str)
 
             def parse_elem(e: ET.Element) -> dict[str, Any]:
@@ -454,7 +455,6 @@ class UiDriver(EventEmitter):
             "swipe",
             [{"x": x1, "y": y1}, {"x": x2, "y": y2}, duration_ms],
         )
-
 
     def _send(self, method: str, api: str, args: Any = None) -> dict[str, Any]:
         if args is None:
