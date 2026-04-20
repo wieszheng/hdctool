@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .driver import UiDriver
@@ -30,7 +30,7 @@ class CVPoint:
     def __repr__(self) -> str:
         return f"CVPoint(x={self.x}, y={self.y})"
 
-    def to_tuple(self) -> Tuple[int, int]:
+    def to_tuple(self) -> tuple[int, int]:
         return (self.x, self.y)
 
 
@@ -44,7 +44,7 @@ class CVMatch:
         y: int,
         width: int,
         height: int,
-        template: Optional["np.ndarray"] = None,
+        template: np.ndarray | None = None,
     ):
         self.confidence = confidence
         self.x = x
@@ -62,7 +62,7 @@ class CVMatch:
         )
 
     @property
-    def bounds(self) -> Tuple[int, int, int, int]:
+    def bounds(self) -> tuple[int, int, int, int]:
         """获取边界矩形 (left, top, right, bottom)"""
         return (self.x, self.y, self.x + self.width, self.y + self.height)
 
@@ -113,7 +113,7 @@ class CV:
         """获取关联的 UiDriver"""
         return self._driver
 
-    def _load_image(self, image: Union[str, "np.ndarray"]) -> "np.ndarray":
+    def _load_image(self, image: str | np.ndarray) -> np.ndarray:
         """
         加载图像
 
@@ -132,7 +132,7 @@ class CV:
         else:
             raise TypeError(f"Invalid image type: {type(image)}")
 
-    def _capture_screen_temp(self) -> "np.ndarray":
+    def _capture_screen_temp(self) -> np.ndarray:
         """截取当前屏幕并返回临时路径"""
         import tempfile
 
@@ -149,11 +149,11 @@ class CV:
 
     def find_image(
         self,
-        template: Union[str, "np.ndarray"],
-        source: Optional[Union[str, "np.ndarray"]] = None,
+        template: str | np.ndarray,
+        source: str | np.ndarray | None = None,
         threshold: float = DEFAULT_THRESHOLD,
-        region: Optional[Tuple[int, int, int, int]] = None,
-    ) -> Optional[CVMatch]:
+        region: tuple[int, int, int, int] | None = None,
+    ) -> CVMatch | None:
         """
         在图像中查找模板（单匹配）
 
@@ -197,11 +197,11 @@ class CV:
 
     def find_images(
         self,
-        template: Union[str, "np.ndarray"],
-        source: Optional[Union[str, "np.ndarray"]] = None,
+        template: str | np.ndarray,
+        source: str | np.ndarray | None = None,
         threshold: float = LOW_THRESHOLD,
         max_results: int = 10,
-    ) -> List[CVMatch]:
+    ) -> list[CVMatch]:
         """
         在图像中查找所有匹配的模板
 
@@ -260,8 +260,8 @@ class CV:
 
     def match_image(
         self,
-        template: Union[str, "np.ndarray"],
-        source: Optional[Union[str, "np.ndarray"]] = None,
+        template: str | np.ndarray,
+        source: str | np.ndarray | None = None,
     ) -> float:
         """
         计算模板与图像的最佳匹配度
@@ -286,8 +286,8 @@ class CV:
 
     def find_and_click(
         self,
-        template: Union[str, "np.ndarray"],
-        source: Optional[Union[str, "np.ndarray"]] = None,
+        template: str | np.ndarray,
+        source: str | np.ndarray | None = None,
         threshold: float = DEFAULT_THRESHOLD,
     ) -> bool:
         """
@@ -310,11 +310,11 @@ class CV:
 
     def wait_for_image(
         self,
-        template: Union[str, "np.ndarray"],
+        template: str | np.ndarray,
         timeout: float = 10.0,
         interval: float = 0.5,
         threshold: float = DEFAULT_THRESHOLD,
-    ) -> Optional[CVMatch]:
+    ) -> CVMatch | None:
         """
         等待图像出现
 
@@ -337,7 +337,7 @@ class CV:
 
     def wait_for_image_disappear(
         self,
-        template: Union[str, "np.ndarray"],
+        template: str | np.ndarray,
         timeout: float = 10.0,
         interval: float = 0.5,
         threshold: float = DEFAULT_THRESHOLD,
@@ -364,9 +364,9 @@ class CV:
 
     def ocr_text(
         self,
-        source: Optional[Union[str, "np.ndarray"]] = None,
-        region: Optional[Tuple[int, int, int, int]] = None,
-    ) -> List[Dict[str, Any]]:
+        source: str | np.ndarray | None = None,
+        region: tuple[int, int, int, int] | None = None,
+    ) -> list[dict[str, Any]]:
         """
         OCR 文字识别
 
@@ -430,9 +430,9 @@ class CV:
     def find_text(
         self,
         text: str,
-        source: Optional[Union[str, "np.ndarray"]] = None,
+        source: str | np.ndarray | None = None,
         confidence: float = 0.6,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         查找图像中的文字
 
@@ -452,8 +452,8 @@ class CV:
 
     def compare_images(
         self,
-        image1: Union[str, "np.ndarray"],
-        image2: Union[str, "np.ndarray"],
+        image1: str | np.ndarray,
+        image2: str | np.ndarray,
     ) -> float:
         """
         比较两张图像的相似度
@@ -485,9 +485,9 @@ class CV:
 
     def detect_colors(
         self,
-        source: Optional[Union[str, "np.ndarray"]] = None,
-        color_range: Optional[Dict[str, Tuple[Tuple[int, int, int], Tuple[int, int, int]]]] = None,
-    ) -> Dict[str, List[Tuple[int, int]]]:
+        source: str | np.ndarray | None = None,
+        color_range: dict[str, tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None,
+    ) -> dict[str, list[tuple[int, int]]]:
         """
         检测图像中的指定颜色区域
 
@@ -531,8 +531,8 @@ class CV:
         self,
         x: int,
         y: int,
-        source: Optional[Union[str, "np.ndarray"]] = None,
-    ) -> Tuple[int, int, int]:
+        source: str | np.ndarray | None = None,
+    ) -> tuple[int, int, int]:
         """
         获取指定像素点的颜色
 

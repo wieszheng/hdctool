@@ -12,7 +12,7 @@ from .exceptions import HdcHandshakeError, HdcSubprocessError, HdcTcpError, HdcT
 from .factory import Hdc, create_client
 from .hilog import Hilog, HilogEntry
 from .log import configure_logging, get_logger
-from .ui import Assert, CV, CVMatch, CVPoint, UiDriver
+from .ui import CV, Assert, CVMatch, CVPoint, UiDriver
 from .version import __version__
 
 __all__ = [

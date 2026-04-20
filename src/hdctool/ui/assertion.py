@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 import time
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .driver import UiDriver
@@ -37,7 +37,7 @@ class Assert:
         """
         self._driver = driver
         self._screenshot_on_fail: bool = True
-        self._last_screenshot_path: Optional[str] = None
+        self._last_screenshot_path: str | None = None
 
     @property
     def driver(self) -> UiDriver:
@@ -55,7 +55,7 @@ class Assert:
 
     def _on_fail(
         self,
-        fail_msg: Optional[str],
+        fail_msg: str | None,
         actual: Any,
         expect: Any,
         condition_desc: str,
@@ -81,7 +81,7 @@ class Assert:
     def is_true(
         self,
         actual: bool,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值为 True
@@ -105,7 +105,7 @@ class Assert:
     def is_false(
         self,
         actual: bool,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值为 False
@@ -130,7 +130,7 @@ class Assert:
         self,
         actual: Any,
         expect: Any,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值等于期望值
@@ -156,7 +156,7 @@ class Assert:
         self,
         actual: Any,
         expect: Any,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值不等于期望值
@@ -182,7 +182,7 @@ class Assert:
         self,
         actual: str,
         expect: str,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际字符串包含期望子串
@@ -208,7 +208,7 @@ class Assert:
         self,
         actual: str,
         expect: str,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际字符串不包含期望子串
@@ -234,7 +234,7 @@ class Assert:
         self,
         actual: str,
         expect: str,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际字符串以期望前缀开头
@@ -260,7 +260,7 @@ class Assert:
         self,
         actual: str,
         expect: str,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际字符串以期望后缀结尾
@@ -286,7 +286,7 @@ class Assert:
         self,
         actual: str,
         pattern: str,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际字符串匹配正则表达式
@@ -313,7 +313,7 @@ class Assert:
         self,
         actual: float,
         expect: float,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值大于期望值
@@ -339,7 +339,7 @@ class Assert:
         self,
         actual: float,
         expect: float,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值大于等于期望值
@@ -365,7 +365,7 @@ class Assert:
         self,
         actual: float,
         expect: float,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值小于期望值
@@ -391,7 +391,7 @@ class Assert:
         self,
         actual: float,
         expect: float,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值小于等于期望值
@@ -416,7 +416,7 @@ class Assert:
     def is_none(
         self,
         actual: Any,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值为 None
@@ -440,7 +440,7 @@ class Assert:
     def is_not_none(
         self,
         actual: Any,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值不为 None
@@ -466,7 +466,7 @@ class Assert:
         actual: float,
         min_val: float,
         max_val: float,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言实际值在指定范围内
@@ -493,7 +493,7 @@ class Assert:
         self,
         actual: str,
         expect_length: int,
-        fail_msg: Optional[str] = None,
+        fail_msg: str | None = None,
     ) -> bool:
         """
         断言字符串长度等于期望值
@@ -517,7 +517,7 @@ class Assert:
         return True
 
     @property
-    def last_screenshot_path(self) -> Optional[str]:
+    def last_screenshot_path(self) -> str | None:
         """
         获取最后一次断言失败时的截图路径
 

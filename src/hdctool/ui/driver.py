@@ -15,6 +15,8 @@ from typing import Any
 
 from ..events import EventEmitter
 from ..target import Target
+from .assertion import Assert
+from .cv import CV
 from .subsystems import (
     UiAppManager,
     UiGestures,
@@ -24,8 +26,6 @@ from .subsystems import (
     UiSystem,
     UiUinput,
 )
-from .assertion import Assert
-from .cv import CV, CVPoint, CVMatch
 
 # Package root (…/hdctool/), sibling to ``uitestkit_sdk/``
 _PKG_ROOT = pathlib.Path(__file__).resolve().parent.parent
