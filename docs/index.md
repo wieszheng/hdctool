@@ -4,4 +4,4 @@
 - [UiDriver 指南](./ui-driver.md)
 - [CV 图像识别](./cv-module.md)
 - [Assertion 断言](./assertion-module.md)
-- [API 参考](../src/hdctool/)
+- [API 参考](./api.md)
